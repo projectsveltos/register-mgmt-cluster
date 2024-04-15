@@ -118,7 +118,7 @@ test: | check-manifests fmt vet ## Run uts.
 
 
 set-manifest-image:
-	sed -i'' -e 's@image: .*@image: '"${MANIFEST_IMG}:$(MANIFEST_TAG)"'@' ./k8s/manifest.yaml
+	sed -i'' -e 's@image: .*@image: '"${MANIFEST_IMG}:$(MANIFEST_TAG)"'@' ./k8s/manifest.yaml >> ./k8s/manifest.yaml-e
 	mv ./k8s/manifest.yaml-e ./manifest/manifest.yaml
 
 ##@ Build
@@ -158,7 +158,7 @@ TIMEOUT ?= 10m
 NUM_NODES ?= 2
 
 .PHONY: create-cluster
-create-cluster: $(KIND) $(KUBECTL)  ## Create a new kind cluster designed for development
+create-cluster: $(KIND) $(KUBECTL) manifests ## Create a new kind cluster designed for development
 	sed -e "s/K8S_VERSION/$(K8S_VERSION)/g"  test/$(KIND_CONFIG) > test/$(KIND_CONFIG).tmp
 	$(KIND) create cluster --name=$(CLUSTER_NAME) --config test/$(KIND_CONFIG).tmp
 	
@@ -172,7 +172,7 @@ create-cluster: $(KIND) $(KUBECTL)  ## Create a new kind cluster designed for de
 
 	# Install projectsveltos register-mgmt-cluster components
 	@echo 'Install projectsveltos register-mgmt-cluster components'
-	$(KUBECTL) apply -f manifest/manifest.yaml
+	sed -e 's@image: .*@image: '"$(CONTROLLER_IMG):$(TAG)"'@' ./k8s/manifest.yaml  | $(KUBECTL) apply -f -
 
 	# Install sveltoscluster-manager
 	$(KUBECTL) apply -f https://raw.githubusercontent.com/projectsveltos/sveltoscluster-manager/$(TAG)/manifest/manifest.yaml
@@ -188,3 +188,4 @@ kind-test: test create-cluster fv ## Build docker image; start kind cluster; loa
 .PHONY: fv
 fv: $(KUBECTL) $(GINKGO) ## Run Sveltos Controller tests using existing cluster
 	cd test/fv; $(GINKGO) -nodes $(NUM_NODES) --label-filter='EXTENDED' --v --trace --randomize-all
+
