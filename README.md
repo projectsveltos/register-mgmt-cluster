@@ -1,2 +1,2 @@
 # register-mgmt-cluster
-Used to register management cluster with Sveltos
+This repo starts a Job that registers management cluster as a cluster to be managed by Sveltos
