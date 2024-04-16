@@ -47,3 +47,4 @@ spec:
       serviceAccountName: register-mgmt-cluster
       restartPolicy: Never
   backoffLimit: 4
+---
