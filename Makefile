@@ -22,7 +22,7 @@ ARCH ?= amd64
 OS ?= $(shell uname -s | tr A-Z a-z)
 K8S_LATEST_VER ?= $(shell curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 export CONTROLLER_IMG ?= $(REGISTRY)/$(IMAGE_NAME)
-TAG ?= main
+TAG ?= v0.30.0 
 
 .PHONY: all
 all: build
@@ -61,7 +61,7 @@ GINKGO := $(TOOLS_BIN_DIR)/ginkgo
 KIND := $(TOOLS_BIN_DIR)/kind
 KUBECTL := $(TOOLS_BIN_DIR)/kubectl
 
-GOLANGCI_LINT_VERSION := "v1.55.2"
+GOLANGCI_LINT_VERSION := "v1.57.2"
 
 $(GOLANGCI_LINT): # Build golangci-lint from tools folder.
 	cd $(TOOLS_DIR); ./get-golangci-lint.sh $(GOLANGCI_LINT_VERSION)
@@ -119,7 +119,7 @@ test: | check-manifests fmt vet ## Run uts.
 
 set-manifest-image:
 	sed -i'' -e 's@image: .*@image: '"${MANIFEST_IMG}:$(MANIFEST_TAG)"'@' ./k8s/manifest.yaml >> ./k8s/manifest.yaml-e
-	mv ./k8s/manifest.yaml-e ./manifest/manifest.yaml
+	cp ./k8s/manifest.yaml ./manifest/manifest.yaml
 
 ##@ Build
 
@@ -149,7 +149,7 @@ load-image: docker-build $(KIND)
 # K8S_VERSION for the Kind cluster can be set as environment variable. If not defined,
 # this default value is used
 ifndef K8S_VERSION
-K8S_VERSION := v1.29.1
+K8S_VERSION := v1.30.0
 endif
 
 KIND_CONFIG ?= kind-cluster.yaml
