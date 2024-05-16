@@ -26,7 +26,7 @@ import (
 )
 
 var _ = Describe("SveltosCluster for management cluster", func() {
-	It("Verifies management cluster is registered", Label("FV"), func() {
+	It("Verifies management cluster is registered", Label("FV", "EXTENDED"), func() {
 		By("Verify SveltosCluster for management cluster has been created")
 		Eventually(func() bool {
 			sveltosClusters := libsveltosv1alpha1.SveltosClusterList{}
