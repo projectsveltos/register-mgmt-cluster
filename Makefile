@@ -187,5 +187,5 @@ kind-test: test create-cluster fv ## Build docker image; start kind cluster; loa
 
 .PHONY: fv
 fv: $(KUBECTL) $(GINKGO) ## Run Sveltos Controller tests using existing cluster
-	cd test/fv; $(GINKGO) -nodes $(NUM_NODES) --label-filter='EXTENDED' --v --trace --randomize-all
+	cd test/fv; $(GINKGO) -nodes $(NUM_NODES) --label-filter='FV' --v --trace --randomize-all
 
