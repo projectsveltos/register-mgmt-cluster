@@ -61,7 +61,7 @@ GINKGO := $(TOOLS_BIN_DIR)/ginkgo
 KIND := $(TOOLS_BIN_DIR)/kind
 KUBECTL := $(TOOLS_BIN_DIR)/kubectl
 
-GOLANGCI_LINT_VERSION := "v1.55.2"
+GOLANGCI_LINT_VERSION := "v1.57.2"
 
 $(GOLANGCI_LINT): # Build golangci-lint from tools folder.
 	cd $(TOOLS_DIR); ./get-golangci-lint.sh $(GOLANGCI_LINT_VERSION)
@@ -119,7 +119,7 @@ test: | check-manifests fmt vet ## Run uts.
 
 set-manifest-image:
 	sed -i'' -e 's@image: .*@image: '"${MANIFEST_IMG}:$(MANIFEST_TAG)"'@' ./k8s/manifest.yaml >> ./k8s/manifest.yaml-e
-	mv ./k8s/manifest.yaml-e ./manifest/manifest.yaml
+	cp ./k8s/manifest.yaml ./manifest/manifest.yaml
 
 ##@ Build
 
@@ -149,7 +149,7 @@ load-image: docker-build $(KIND)
 # K8S_VERSION for the Kind cluster can be set as environment variable. If not defined,
 # this default value is used
 ifndef K8S_VERSION
-K8S_VERSION := v1.29.1
+K8S_VERSION := v1.30.0
 endif
 
 KIND_CONFIG ?= kind-cluster.yaml
@@ -187,5 +187,5 @@ kind-test: test create-cluster fv ## Build docker image; start kind cluster; loa
 
 .PHONY: fv
 fv: $(KUBECTL) $(GINKGO) ## Run Sveltos Controller tests using existing cluster
-	cd test/fv; $(GINKGO) -nodes $(NUM_NODES) --label-filter='EXTENDED' --v --trace --randomize-all
+	cd test/fv; $(GINKGO) -nodes $(NUM_NODES) --label-filter='FV' --v --trace --randomize-all
 
