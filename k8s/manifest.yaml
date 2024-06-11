@@ -28,6 +28,7 @@ metadata:
   name: register-mgmt-cluster-job
   namespace: projectsveltos
 spec:
+  ttlSecondsAfterFinished: 360
   template:
     spec:
       containers:
