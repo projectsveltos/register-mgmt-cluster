@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.4.2
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
-	github.com/projectsveltos/libsveltos v0.32.0
+	github.com/projectsveltos/libsveltos v0.32.1-0.20240611141238-c8675b616482
 	github.com/spf13/pflag v1.0.5
 	k8s.io/api v0.30.1
 	k8s.io/apimachinery v0.30.1
@@ -68,7 +68,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.30.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20240502163921-fe8a2dddb1d0 // indirect
-	sigs.k8s.io/cluster-api v1.7.2 // indirect
+	sigs.k8s.io/cluster-api v1.7.3 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
