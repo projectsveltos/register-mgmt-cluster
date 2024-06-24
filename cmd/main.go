@@ -385,7 +385,14 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 	}
 
 	logger.V(logs.LogDebug).Info("Updating SveltosCluster")
+	if currentSveltosCluster.Labels == nil {
+		currentSveltosCluster.Labels = map[string]string{}
+	}
+	for k := range labels {
+		currentSveltosCluster.Labels[k] = labels[k]
+	}
 	currentSveltosCluster.Labels = labels
+
 	currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
 		TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
 			RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
