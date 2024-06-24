@@ -27,7 +27,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	libsveltosv1alpha1 "github.com/projectsveltos/libsveltos/api/v1alpha1"
+	libsveltosv1beta1 "github.com/projectsveltos/libsveltos/api/v1beta1"
 	logs "github.com/projectsveltos/libsveltos/lib/logsettings"
 )
 
@@ -90,7 +90,7 @@ func initScheme() (*runtime.Scheme, error) {
 	if err := rbacv1.AddToScheme(s); err != nil {
 		return nil, err
 	}
-	if err := libsveltosv1alpha1.AddToScheme(s); err != nil {
+	if err := libsveltosv1beta1.AddToScheme(s); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -365,7 +365,7 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 	labels map[string]string, logger logr.Logger) error {
 
 	const renewalInterval = 3600 * time.Second
-	currentSveltosCluster := &libsveltosv1alpha1.SveltosCluster{}
+	currentSveltosCluster := &libsveltosv1beta1.SveltosCluster{}
 	err := c.Get(ctx, types.NamespacedName{Namespace: clusterNamespace, Name: clusterName},
 		currentSveltosCluster)
 	if err != nil {
@@ -374,8 +374,8 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 			currentSveltosCluster.Namespace = clusterNamespace
 			currentSveltosCluster.Name = clusterName
 			currentSveltosCluster.Labels = labels
-			currentSveltosCluster.Spec = libsveltosv1alpha1.SveltosClusterSpec{
-				TokenRequestRenewalOption: &libsveltosv1alpha1.TokenRequestRenewalOption{
+			currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
+				TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
 					RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
 				},
 			}
@@ -386,8 +386,8 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 
 	logger.V(logs.LogDebug).Info("Updating SveltosCluster")
 	currentSveltosCluster.Labels = labels
-	currentSveltosCluster.Spec = libsveltosv1alpha1.SveltosClusterSpec{
-		TokenRequestRenewalOption: &libsveltosv1alpha1.TokenRequestRenewalOption{
+	currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
+		TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
 			RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
 		},
 	}
