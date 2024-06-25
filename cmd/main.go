@@ -370,7 +370,7 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 		currentSveltosCluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			logger.V(logs.LogDebug).Info(fmt.Sprintf("Creating SveltosCluster %s/%s", clusterNamespace, clusterName))
+			logger.V(logs.LogInfo).Info(fmt.Sprintf("Creating SveltosCluster %s/%s", clusterNamespace, clusterName))
 			currentSveltosCluster.Namespace = clusterNamespace
 			currentSveltosCluster.Name = clusterName
 			currentSveltosCluster.Labels = labels
@@ -384,14 +384,13 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 		return err
 	}
 
-	logger.V(logs.LogDebug).Info("Updating SveltosCluster")
+	logger.V(logs.LogInfo).Info("Updating SveltosCluster")
 	if currentSveltosCluster.Labels == nil {
 		currentSveltosCluster.Labels = map[string]string{}
 	}
 	for k := range labels {
 		currentSveltosCluster.Labels[k] = labels[k]
 	}
-	currentSveltosCluster.Labels = labels
 
 	currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
 		TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
@@ -408,7 +407,7 @@ func patchSecret(ctx context.Context, c client.Client, clusterNamespace, secretN
 	err := c.Get(ctx, types.NamespacedName{Namespace: clusterNamespace, Name: secretName}, currentSecret)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			logger.V(logs.LogDebug).Info(fmt.Sprintf("Creating Secret %s/%s", clusterNamespace, secretName))
+			logger.V(logs.LogInfo).Info(fmt.Sprintf("Creating Secret %s/%s", clusterNamespace, secretName))
 			currentSecret.Namespace = clusterNamespace
 			currentSecret.Name = secretName
 			currentSecret.Data = map[string][]byte{kubeconfigKey: []byte(kubeconfigData)}
@@ -417,7 +416,7 @@ func patchSecret(ctx context.Context, c client.Client, clusterNamespace, secretN
 		return err
 	}
 
-	logger.V(logs.LogDebug).Info(fmt.Sprintf("Updating Secret %s/%s", clusterNamespace, secretName))
+	logger.V(logs.LogInfo).Info(fmt.Sprintf("Updating Secret %s/%s", clusterNamespace, secretName))
 	currentSecret.Data = map[string][]byte{
 		kubeconfigKey: []byte(kubeconfigData),
 	}
