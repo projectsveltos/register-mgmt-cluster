@@ -28,12 +28,12 @@ metadata:
   name: register-mgmt-cluster-job
   namespace: projectsveltos
 spec:
-  ttlSecondsAfterFinished: 360
+  ttlSecondsAfterFinished: 240
   template:
     spec:
       containers:
       - name: register-mgmt-cluster
-        image: projectsveltos/register-mgmt-cluster:dev
+        image: projectsveltos/register-mgmt-cluster:v0.33.0
         imagePullPolicy: IfNotPresent
         args:
         - --labels=
