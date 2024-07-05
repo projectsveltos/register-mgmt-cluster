@@ -22,14 +22,14 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	libsveltosv1alpha1 "github.com/projectsveltos/libsveltos/api/v1alpha1"
+	libsveltosv1beta1 "github.com/projectsveltos/libsveltos/api/v1beta1"
 )
 
 var _ = Describe("SveltosCluster for management cluster", func() {
 	It("Verifies management cluster is registered", Label("FV", "EXTENDED"), func() {
 		By("Verify SveltosCluster for management cluster has been created")
 		Eventually(func() bool {
-			sveltosClusters := libsveltosv1alpha1.SveltosClusterList{}
+			sveltosClusters := libsveltosv1beta1.SveltosClusterList{}
 			err := k8sClient.List(context.TODO(), &sveltosClusters)
 			if err != nil {
 				return false
@@ -40,7 +40,7 @@ var _ = Describe("SveltosCluster for management cluster", func() {
 		// Verifying SveltosCluster is ready means validating Kubeconfig
 		By("Verify SveltosCluster for management cluster is ready")
 		Eventually(func() bool {
-			sveltosClusters := libsveltosv1alpha1.SveltosClusterList{}
+			sveltosClusters := libsveltosv1beta1.SveltosClusterList{}
 			err := k8sClient.List(context.TODO(), &sveltosClusters)
 			if err != nil {
 				return false

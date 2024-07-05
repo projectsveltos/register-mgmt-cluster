@@ -25,6 +25,8 @@ jobs:
       run: make fmt
     - name: VET
       run: make vet
+    - name: UT
+      run: make test      
     - name: LINT
       run: make lint
       env:

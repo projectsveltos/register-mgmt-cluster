@@ -27,7 +27,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	libsveltosv1alpha1 "github.com/projectsveltos/libsveltos/api/v1alpha1"
+	libsveltosv1beta1 "github.com/projectsveltos/libsveltos/api/v1beta1"
 	logs "github.com/projectsveltos/libsveltos/lib/logsettings"
 )
 
@@ -90,7 +90,7 @@ func initScheme() (*runtime.Scheme, error) {
 	if err := rbacv1.AddToScheme(s); err != nil {
 		return nil, err
 	}
-	if err := libsveltosv1alpha1.AddToScheme(s); err != nil {
+	if err := libsveltosv1beta1.AddToScheme(s); err != nil {
 		return nil, err
 	}
 	return s, nil
@@ -365,17 +365,17 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 	labels map[string]string, logger logr.Logger) error {
 
 	const renewalInterval = 3600 * time.Second
-	currentSveltosCluster := &libsveltosv1alpha1.SveltosCluster{}
+	currentSveltosCluster := &libsveltosv1beta1.SveltosCluster{}
 	err := c.Get(ctx, types.NamespacedName{Namespace: clusterNamespace, Name: clusterName},
 		currentSveltosCluster)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			logger.V(logs.LogDebug).Info(fmt.Sprintf("Creating SveltosCluster %s/%s", clusterNamespace, clusterName))
+			logger.V(logs.LogInfo).Info(fmt.Sprintf("Creating SveltosCluster %s/%s", clusterNamespace, clusterName))
 			currentSveltosCluster.Namespace = clusterNamespace
 			currentSveltosCluster.Name = clusterName
 			currentSveltosCluster.Labels = labels
-			currentSveltosCluster.Spec = libsveltosv1alpha1.SveltosClusterSpec{
-				TokenRequestRenewalOption: &libsveltosv1alpha1.TokenRequestRenewalOption{
+			currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
+				TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
 					RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
 				},
 			}
@@ -384,10 +384,16 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 		return err
 	}
 
-	logger.V(logs.LogDebug).Info("Updating SveltosCluster")
-	currentSveltosCluster.Labels = labels
-	currentSveltosCluster.Spec = libsveltosv1alpha1.SveltosClusterSpec{
-		TokenRequestRenewalOption: &libsveltosv1alpha1.TokenRequestRenewalOption{
+	logger.V(logs.LogInfo).Info("Updating SveltosCluster")
+	if currentSveltosCluster.Labels == nil {
+		currentSveltosCluster.Labels = map[string]string{}
+	}
+	for k := range labels {
+		currentSveltosCluster.Labels[k] = labels[k]
+	}
+
+	currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
+		TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
 			RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
 		},
 	}
@@ -401,7 +407,7 @@ func patchSecret(ctx context.Context, c client.Client, clusterNamespace, secretN
 	err := c.Get(ctx, types.NamespacedName{Namespace: clusterNamespace, Name: secretName}, currentSecret)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			logger.V(logs.LogDebug).Info(fmt.Sprintf("Creating Secret %s/%s", clusterNamespace, secretName))
+			logger.V(logs.LogInfo).Info(fmt.Sprintf("Creating Secret %s/%s", clusterNamespace, secretName))
 			currentSecret.Namespace = clusterNamespace
 			currentSecret.Name = secretName
 			currentSecret.Data = map[string][]byte{kubeconfigKey: []byte(kubeconfigData)}
@@ -410,7 +416,7 @@ func patchSecret(ctx context.Context, c client.Client, clusterNamespace, secretN
 		return err
 	}
 
-	logger.V(logs.LogDebug).Info(fmt.Sprintf("Updating Secret %s/%s", clusterNamespace, secretName))
+	logger.V(logs.LogInfo).Info(fmt.Sprintf("Updating Secret %s/%s", clusterNamespace, secretName))
 	currentSecret.Data = map[string][]byte{
 		kubeconfigKey: []byte(kubeconfigData),
 	}
