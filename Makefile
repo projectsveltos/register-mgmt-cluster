@@ -118,7 +118,7 @@ test: | check-manifests fmt vet ## Run uts.
 
 
 set-manifest-image:
-	sed -i'' -e 's@image: .*@image: '"${MANIFEST_IMG}:$(MANIFEST_TAG)"'@' ./k8s/manifest.yaml >> ./k8s/manifest.yaml-e
+	sed -i'' -e 's@image: .*@image: '"docker.io/${MANIFEST_IMG}:$(MANIFEST_TAG)"'@' ./k8s/manifest.yaml >> ./k8s/manifest.yaml-e
 	cp ./k8s/manifest.yaml ./manifest/manifest.yaml
 
 ##@ Build
