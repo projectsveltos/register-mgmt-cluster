@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
       - name: register-mgmt-cluster
-        image: docker.io/projectsveltos/register-mgmt-cluster:v0.40.0
+        image: docker.io/projectsveltos/register-mgmt-cluster:main
         imagePullPolicy: IfNotPresent
         args:
         - --labels=
