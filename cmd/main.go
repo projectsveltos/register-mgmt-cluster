@@ -364,7 +364,7 @@ func onboardManagementCluster(ctx context.Context, c client.Client, clusterNames
 func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace, clusterName string,
 	labels map[string]string, logger logr.Logger) error {
 
-	const renewalInterval = 3600 * time.Second
+	const renewalInterval = 3 * 3600 * time.Second // every 3 hours
 	currentSveltosCluster := &libsveltosv1beta1.SveltosCluster{}
 	err := c.Get(ctx, types.NamespacedName{Namespace: clusterNamespace, Name: clusterName},
 		currentSveltosCluster)
