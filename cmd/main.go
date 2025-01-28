@@ -36,6 +36,7 @@ var (
 	labels                  string
 	sveltosClusterNamespace string
 	sveltosClusterName      string
+	serviceAccountToken     bool
 )
 
 const (
@@ -108,6 +109,9 @@ func initFlags(fs *pflag.FlagSet) {
 
 	fs.StringVar(&sveltosClusterName, "name", "mgmt",
 		"This option allows you to specify the name of the SveltosCluster instance representing the management cluster")
+
+	fs.BoolVar(&serviceAccountToken, "service-account-token", false,
+		"This option instructs Sveltos to create a Secret of type kubernetes.io/service-account-token instead of generating a token associated to ServiceAccount")
 }
 
 func registerManagementCluster(ctx context.Context, restConfig *rest.Config, c client.Client,
@@ -172,13 +176,26 @@ func generateKubeconfigForServiceAccount(ctx context.Context, restConfig *rest.C
 		return "", err
 	}
 
-	tokenRequest, err := getServiceAccountTokenRequest(ctx, restConfig, namespace, serviceAccountName, expirationSeconds, logger)
-	if err != nil {
-		return "", err
+	var token string
+	if serviceAccountToken {
+		if err := createSecret(ctx, c, namespace, serviceAccountName, logger); err != nil {
+			return "", err
+		}
+		var err error
+		token, err = getToken(ctx, c, namespace, serviceAccountName)
+		if err != nil {
+			return "", err
+		}
+	} else {
+		tokenRequest, err := getServiceAccountTokenRequest(ctx, restConfig, namespace, serviceAccountName, expirationSeconds, logger)
+		if err != nil {
+			return "", err
+		}
+		token = tokenRequest.Token
 	}
 
 	logger.V(logs.LogInfo).Info("Get Kubeconfig from TokenRequest")
-	data := getKubeconfigFromToken(restConfig, namespace, serviceAccountName, tokenRequest.Token, caData)
+	data := getKubeconfigFromToken(restConfig, namespace, serviceAccountName, token, caData)
 
 	return data, nil
 }
@@ -219,6 +236,61 @@ func createServiceAccount(ctx context.Context, c client.Client, namespace, name 
 	}
 
 	return nil
+}
+
+func createSecret(ctx context.Context, c client.Client, namespace, saName string,
+	logger logr.Logger) error {
+
+	logger.V(logs.LogInfo).Info(fmt.Sprintf("Create Secret %s/%s", namespace, saName))
+	currentSecret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      saName,
+			Annotations: map[string]string{
+				corev1.ServiceAccountNameKey: saName,
+			},
+		},
+		Type: corev1.SecretTypeServiceAccountToken,
+	}
+
+	err := c.Create(ctx, currentSecret)
+	if err != nil && !apierrors.IsAlreadyExists(err) {
+		logger.V(logs.LogInfo).Info(fmt.Sprintf("Failed to create Secret %s/%s: %v",
+			namespace, saName, err))
+		return err
+	}
+
+	return nil
+}
+
+func getToken(ctx context.Context, c client.Client, namespace, secretName string) (string, error) {
+	retries := 0
+	const maxRetries = 5
+	for {
+		secret := &corev1.Secret{}
+		err := c.Get(ctx, types.NamespacedName{Namespace: namespace, Name: secretName},
+			secret)
+		if err != nil {
+			if retries < maxRetries {
+				time.Sleep(time.Second)
+				continue
+			}
+			return "", err
+		}
+
+		if secret.Data == nil {
+			time.Sleep(time.Second)
+			continue
+		}
+
+		v, ok := secret.Data["token"]
+		if !ok {
+			time.Sleep(time.Second)
+			continue
+		}
+
+		return string(v), nil
+	}
 }
 
 func createClusterRole(ctx context.Context, c client.Client, clusterRoleName string, logger logr.Logger) error {

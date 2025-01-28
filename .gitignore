@@ -31,4 +31,7 @@ manager_pull_policy.yaml-e
 manager_auth_proxy_patch.yaml-e
 k8s/manifest.yaml-e
 
+test/manifest.yaml
+test/patched_manifest.yaml
+
 version.txt
