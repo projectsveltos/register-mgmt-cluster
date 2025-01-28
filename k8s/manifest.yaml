@@ -37,6 +37,7 @@ spec:
         imagePullPolicy: IfNotPresent
         args:
         - --labels=
+        - --service-account-token=false
         resources:
           requests:
             memory: 128Mi

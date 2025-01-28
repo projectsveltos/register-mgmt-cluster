@@ -157,8 +157,7 @@ CLUSTER_NAME ?= sveltos
 TIMEOUT ?= 10m
 NUM_NODES ?= 2
 
-.PHONY: create-cluster
-create-cluster: $(KIND) $(KUBECTL) manifests ## Create a new kind cluster designed for development
+prepare-cluster:
 	sed -e "s/K8S_VERSION/$(K8S_VERSION)/g"  test/$(KIND_CONFIG) > test/$(KIND_CONFIG).tmp
 	$(KIND) create cluster --name=$(CLUSTER_NAME) --config test/$(KIND_CONFIG).tmp
 	
@@ -170,13 +169,21 @@ create-cluster: $(KIND) $(KUBECTL) manifests ## Create a new kind cluster design
 	$(KUBECTL) apply -f https://raw.githubusercontent.com/projectsveltos/libsveltos/$(TAG)/manifests/apiextensions.k8s.io_v1_customresourcedefinition_debuggingconfigurations.lib.projectsveltos.io.yaml
 	$(KUBECTL) apply -f https://raw.githubusercontent.com/projectsveltos/libsveltos/$(TAG)/manifests/apiextensions.k8s.io_v1_customresourcedefinition_sveltosclusters.lib.projectsveltos.io.yaml
 
-	# Install projectsveltos register-mgmt-cluster components
-	@echo 'Install projectsveltos register-mgmt-cluster components'
-	sed -e 's@image: .*@image: '"$(CONTROLLER_IMG):$(TAG)"'@' ./k8s/manifest.yaml  | $(KUBECTL) apply -f -
-
 	# Install sveltoscluster-manager
 	$(KUBECTL) apply -f https://raw.githubusercontent.com/projectsveltos/sveltoscluster-manager/$(TAG)/manifest/manifest.yaml
 
+
+.PHONY: create-cluster
+create-cluster: $(KIND) $(KUBECTL) manifests ## Create a new kind cluster designed for development
+	$(MAKE) prepare-cluster
+
+	$(MAKE) deploy-projectsveltos
+
+.PHONY: create-cluster-service-account-token-mode
+create-cluster-service-account-token-mode: $(KIND) $(KUBECTL) manifests ## Create a new kind cluster designed for development. Starts register-mgmt-cluster with service-account-token=true
+	$(MAKE) prepare-cluster
+
+	$(MAKE) deploy-projectsveltos-service-account-token-mode
 
 .PHONY: delete-cluster
 delete-cluster: $(KIND) ## Deletes the kind cluster $(CLUSTER_NAME)
@@ -189,3 +196,12 @@ kind-test: test create-cluster fv ## Build docker image; start kind cluster; loa
 fv: $(KUBECTL) $(GINKGO) ## Run Sveltos Controller tests using existing cluster
 	cd test/fv; $(GINKGO) -nodes $(NUM_NODES) --label-filter='FV' --v --trace --randomize-all
 
+.PHONY: deploy-projectsveltos
+deploy-projectsveltos: # Install projectsveltos register-mgmt-cluster
+	@echo 'Install projectsveltos register-mgmt-cluster'
+	sed -e 's@image: .*@image: '"$(CONTROLLER_IMG):$(TAG)"'@' ./k8s/manifest.yaml  | $(KUBECTL) apply -f -
+
+deploy-projectsveltos-service-account-token-mode: $(KUBECTL)
+	sed -e 's@image: .*@image: '"$(CONTROLLER_IMG):$(TAG)"'@' ./k8s/manifest.yaml > test/manifest.yaml
+	sed -e "s/service-account-token=false/service-account-token=true/g"  test/manifest.yaml > test/patched_manifest.yaml
+	$(KUBECTL) apply -f test/patched_manifest.yaml
