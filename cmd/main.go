@@ -436,7 +436,12 @@ func onboardManagementCluster(ctx context.Context, c client.Client, clusterNames
 func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace, clusterName string,
 	labels map[string]string, logger logr.Logger) error {
 
-	const renewalInterval = 3 * 3600 * time.Second // every 3 hours
+	// Token duration is fixed at one hour.  Increasing this value would cause issues
+	// because Sveltos relies on this duration to determine when to refresh the token.
+	// If this value is larger than the actual token expiration (set by previous released
+	// images), Sveltos might attempt to use an expired token, leading to authentication failures.
+	// This value must match the duration of the renewed tokens provided by the shipped version.
+	const renewalInterval = 1 * 3600 * time.Second // every 1 hour
 	currentSveltosCluster := &libsveltosv1beta1.SveltosCluster{}
 	err := c.Get(ctx, types.NamespacedName{Namespace: clusterNamespace, Name: clusterName},
 		currentSveltosCluster)
