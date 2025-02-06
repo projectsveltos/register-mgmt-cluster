@@ -43,7 +43,7 @@ const (
 	//nolint: gosec // this is just postfix of the secret name
 	sveltosKubeconfigSecretNamePostfix = "-sveltos-kubeconfig"
 	projectsveltos                     = "projectsveltos"
-	secondsInDay                       = 3600
+	tokenExpirationInSeconds           = 7200
 	kubeconfigKey                      = "kubeconfig"
 )
 
@@ -118,7 +118,7 @@ func registerManagementCluster(ctx context.Context, restConfig *rest.Config, c c
 	caData []byte, logger logr.Logger) error {
 
 	kubeconfig, err := generateKubeconfigForServiceAccount(ctx, restConfig, c, projectsveltos,
-		projectsveltos, secondsInDay, caData, logger)
+		projectsveltos, tokenExpirationInSeconds, caData, logger)
 	if err != nil {
 		logger.V(logs.LogInfo).Info(fmt.Sprintf("failed to get kubeconfig: %v", err))
 		return err
