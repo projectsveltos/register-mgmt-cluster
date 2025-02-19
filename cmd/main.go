@@ -451,10 +451,12 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 			currentSveltosCluster.Namespace = clusterNamespace
 			currentSveltosCluster.Name = clusterName
 			currentSveltosCluster.Labels = labels
-			currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
-				TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
-					RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
-				},
+			if !serviceAccountToken {
+				currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
+					TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
+						RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
+					},
+				}
 			}
 			return c.Create(ctx, currentSveltosCluster)
 		}
@@ -469,10 +471,12 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 		currentSveltosCluster.Labels[k] = labels[k]
 	}
 
-	currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
-		TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
-			RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
-		},
+	if !serviceAccountToken {
+		currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
+			TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
+				RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
+			},
+		}
 	}
 	return c.Update(ctx, currentSveltosCluster)
 }
