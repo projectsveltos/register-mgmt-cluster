@@ -1,13 +1,13 @@
 module github.com/projectsveltos/register-mgmt-cluster
 
-go 1.23.5
+go 1.23.6
 
 require (
 	github.com/TwiN/go-color v1.4.1
 	github.com/go-logr/logr v1.4.2
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
-	github.com/projectsveltos/libsveltos v0.48.1
+	github.com/projectsveltos/libsveltos v0.48.2-0.20250224123442-b672af4e6104
 	github.com/spf13/pflag v1.0.6
 	k8s.io/api v0.32.2
 	k8s.io/apimachinery v0.32.2
@@ -68,7 +68,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.32.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7 // indirect
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
-	sigs.k8s.io/cluster-api v1.9.4 // indirect
+	sigs.k8s.io/cluster-api v1.9.5 // indirect
 	sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.5.0 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
