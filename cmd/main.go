@@ -43,7 +43,7 @@ const (
 	//nolint: gosec // this is just postfix of the secret name
 	sveltosKubeconfigSecretNamePostfix = "-sveltos-kubeconfig"
 	projectsveltos                     = "projectsveltos"
-	tokenExpirationInSeconds           = 7200
+	tokenExpirationInSeconds           = 10800
 	kubeconfigKey                      = "kubeconfig"
 )
 
