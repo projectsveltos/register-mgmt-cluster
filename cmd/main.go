@@ -424,13 +424,13 @@ func onboardManagementCluster(ctx context.Context, c client.Client, clusterNames
 		return err
 	}
 
-	err = patchSveltosCluster(ctx, c, clusterNamespace, clusterName, labels, logger)
+	secretName := clusterName + sveltosKubeconfigSecretNamePostfix
+	err = patchSecret(ctx, c, clusterNamespace, secretName, kubeconfigData, logger)
 	if err != nil {
 		return err
 	}
 
-	secretName := clusterName + sveltosKubeconfigSecretNamePostfix
-	return patchSecret(ctx, c, clusterNamespace, secretName, kubeconfigData, logger)
+	return patchSveltosCluster(ctx, c, clusterNamespace, clusterName, labels, logger)
 }
 
 func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace, clusterName string,
@@ -451,6 +451,9 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 			currentSveltosCluster.Namespace = clusterNamespace
 			currentSveltosCluster.Name = clusterName
 			currentSveltosCluster.Labels = labels
+			// register-mgmt-cluster is going to update Secret data with this key only.
+			// set also SveltosCluster Spec.KubeconfigKeyName to be in sync
+			currentSveltosCluster.Spec.KubeconfigKeyName = kubeconfigKey
 			if !serviceAccountToken {
 				currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
 					TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
@@ -471,6 +474,7 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 		currentSveltosCluster.Labels[k] = labels[k]
 	}
 
+	currentSveltosCluster.Spec.KubeconfigKeyName = kubeconfigKey
 	if !serviceAccountToken {
 		currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
 			TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
@@ -498,9 +502,10 @@ func patchSecret(ctx context.Context, c client.Client, clusterNamespace, secretN
 	}
 
 	logger.V(logs.LogInfo).Info(fmt.Sprintf("Updating Secret %s/%s", clusterNamespace, secretName))
-	currentSecret.Data = map[string][]byte{
-		kubeconfigKey: []byte(kubeconfigData),
+	if currentSecret.Data == nil {
+		currentSecret.Data = map[string][]byte{}
 	}
+	currentSecret.Data[kubeconfigKey] = []byte(kubeconfigData)
 
 	return c.Update(ctx, currentSecret)
 }
