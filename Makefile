@@ -104,7 +104,7 @@ vet: ## Run go vet against code.
 
 .PHONY: lint
 lint: $(GOLANGCI_LINT) ## Lint codebase
-	$(GOLANGCI_LINT) run -v --fast=false --max-issues-per-linter 0 --max-same-issues 0 --timeout 5m	
+	$(GOLANGCI_LINT) run -v --fast=false --max-issues-per-linter 0 --max-same-issues 0 --timeout 5m
 
 .PHONY: check-manifests
 check-manifests: manifests ## Verify manifests file is up to date
@@ -114,7 +114,7 @@ check-manifests: manifests ## Verify manifests file is up to date
 
 .PHONY: test
 test: | check-manifests fmt vet ## Run uts.
-	KUBEBUILDER_ASSETS="$(KUBEBUILDER_ASSETS)" go test $(shell go list ./... |grep -v test/fv |grep -v test/helpers) $(TEST_ARGS) -coverprofile cover.out 
+	KUBEBUILDER_ASSETS="$(KUBEBUILDER_ASSETS)" go test $(shell go list ./... |grep -v test/fv |grep -v test/helpers) $(TEST_ARGS) -coverprofile cover.out
 
 
 set-manifest-image:
@@ -149,7 +149,7 @@ load-image: docker-build $(KIND)
 # K8S_VERSION for the Kind cluster can be set as environment variable. If not defined,
 # this default value is used
 ifndef K8S_VERSION
-K8S_VERSION := v1.32.2
+K8S_VERSION := v1.33.0
 endif
 
 KIND_CONFIG ?= kind-cluster.yaml
@@ -160,7 +160,7 @@ NUM_NODES ?= 2
 prepare-cluster:
 	sed -e "s/K8S_VERSION/$(K8S_VERSION)/g"  test/$(KIND_CONFIG) > test/$(KIND_CONFIG).tmp
 	$(KIND) create cluster --name=$(CLUSTER_NAME) --config test/$(KIND_CONFIG).tmp
-	
+
 	# Load projectsveltos image into cluster
 	@echo 'Load projectsveltos image into cluster'
 	$(MAKE) load-image
