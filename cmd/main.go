@@ -458,6 +458,7 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 				currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
 					TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
 						RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
+						TokenDuration:             metav1.Duration{Duration: 5 * renewalInterval},
 					},
 				}
 			}
@@ -479,6 +480,7 @@ func patchSveltosCluster(ctx context.Context, c client.Client, clusterNamespace,
 		currentSveltosCluster.Spec = libsveltosv1beta1.SveltosClusterSpec{
 			TokenRequestRenewalOption: &libsveltosv1beta1.TokenRequestRenewalOption{
 				RenewTokenRequestInterval: metav1.Duration{Duration: renewalInterval},
+				TokenDuration:             metav1.Duration{Duration: 5 * renewalInterval},
 			},
 		}
 	}
