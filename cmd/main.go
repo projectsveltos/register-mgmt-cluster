@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/base64"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -28,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	libsveltosv1beta1 "github.com/projectsveltos/libsveltos/api/v1beta1"
+	"github.com/projectsveltos/libsveltos/lib/k8s_utils"
 	logs "github.com/projectsveltos/libsveltos/lib/logsettings"
 )
 
@@ -37,6 +39,48 @@ var (
 	sveltosClusterNamespace string
 	sveltosClusterName      string
 	serviceAccountToken     bool
+)
+
+var (
+	classifierInstance = `apiVersion: lib.projectsveltos.io/v1beta1
+kind: Classifier
+metadata:
+  name: default-classifier
+spec:
+  classifierLabels:
+   - key: sveltos-agent
+     value: present`
+
+	debuggingConfigurationInstance = `apiVersion: lib.projectsveltos.io/v1beta1
+kind: DebuggingConfiguration
+metadata:
+  name: default
+spec:
+  configuration:
+  - component: AccessManager
+    logLevel: LogLevelInfo
+  - component: AddonManager
+    logLevel: LogLevelInfo
+  - component: Classifier
+    logLevel: LogLevelInfo
+  - component: DriftDetectionManager
+    logLevel: LogLevelInfo
+  - component: EventManager
+    logLevel: LogLevelInfo
+  - component: HealthCheckManager
+    logLevel: LogLevelInfo
+  - component: SveltosClusterManager
+    logLevel: LogLevelInfo
+  - component: UIBackend
+    logLevel: LogLevelInfo
+  - component: SveltosAgent
+    logLevel: LogLevelInfo
+  - component: ShardController
+    logLevel: LogLevelInfo
+  - component: ConversionWebhook
+    logLevel: LogLevelInfo
+  - component: Techsupport
+    logLevel: LogLevelInfo`
 )
 
 const (
@@ -78,6 +122,11 @@ func main() {
 
 	ctx := ctrl.SetupSignalHandler()
 	err = registerManagementCluster(ctx, restConfig, c, caData, setupLog)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	err = deployDefaultInstances(ctx, c, setupLog)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -135,6 +184,60 @@ func registerManagementCluster(ctx context.Context, restConfig *rest.Config, c c
 		sveltosClusterLabels, logger)
 	if err != nil {
 		logger.V(logs.LogInfo).Info(fmt.Sprintf("failed to register cluster: %v", err))
+		return err
+	}
+
+	return nil
+}
+
+func deployDefaultInstances(ctx context.Context, c client.Client, logger logr.Logger) error {
+	classifierErr := deployDefaultClassifierInstance(ctx, c, logger)
+
+	debuggingConfigurationErr := deployDefaultDebuggingConfigurationInstance(ctx, c, logger)
+
+	return errors.Join(classifierErr, debuggingConfigurationErr)
+}
+
+func deployDefaultClassifierInstance(ctx context.Context, c client.Client, logger logr.Logger) error {
+	defaultInstance, err := k8s_utils.GetUnstructured([]byte(classifierInstance))
+	if err != nil {
+		logger.V(logs.LogInfo).Info(fmt.Sprintf("failed to get default classifier instance: %v", err))
+	}
+
+	currentInstance := &libsveltosv1beta1.Classifier{}
+	err = c.Get(ctx,
+		types.NamespacedName{Name: defaultInstance.GetName()},
+		currentInstance)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return c.Create(ctx, defaultInstance)
+		}
+		logger.V(logs.LogInfo).Info(fmt.Sprintf("failed to get default classifier instance: %v", err))
+		return err
+	}
+
+	return nil
+}
+
+func deployDefaultDebuggingConfigurationInstance(ctx context.Context, c client.Client,
+	logger logr.Logger) error {
+
+	defaultInstance, err := k8s_utils.GetUnstructured([]byte(debuggingConfigurationInstance))
+	if err != nil {
+		logger.V(logs.LogInfo).Info(
+			fmt.Sprintf("failed to get default debuggingConfiguration instance: %v", err))
+	}
+
+	currentInstance := &libsveltosv1beta1.DebuggingConfiguration{}
+	err = c.Get(ctx,
+		types.NamespacedName{Name: defaultInstance.GetName()},
+		currentInstance)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			return c.Create(ctx, defaultInstance)
+		}
+		logger.V(logs.LogInfo).Info(
+			fmt.Sprintf("failed to get default debuggingConfiguration instance: %v", err))
 		return err
 	}
 
