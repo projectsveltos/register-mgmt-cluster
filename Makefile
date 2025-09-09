@@ -1,6 +1,8 @@
 
 # Image URL to use all building/pushing image targets
 IMG ?= controller:latest
+# KUBEBUILDER_ENVTEST_KUBERNETES_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
+KUBEBUILDER_ENVTEST_KUBERNETES_VERSION = 1.34.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -61,7 +63,7 @@ GINKGO := $(TOOLS_BIN_DIR)/ginkgo
 KIND := $(TOOLS_BIN_DIR)/kind
 KUBECTL := $(TOOLS_BIN_DIR)/kubectl
 
-GOLANGCI_LINT_VERSION := "v1.64.7"
+GOLANGCI_LINT_VERSION := "v2.4.0"
 
 $(GOLANGCI_LINT): # Build golangci-lint from tools folder.
 	cd $(TOOLS_DIR); ./get-golangci-lint.sh $(GOLANGCI_LINT_VERSION)
@@ -104,18 +106,23 @@ vet: ## Run go vet against code.
 
 .PHONY: lint
 lint: $(GOLANGCI_LINT) ## Lint codebase
-	$(GOLANGCI_LINT) run -v --fast=false --max-issues-per-linter 0 --max-same-issues 0 --timeout 5m
+	$(GOLANGCI_LINT) run -v --max-issues-per-linter 0 --max-same-issues 0 --timeout 5m
 
 .PHONY: check-manifests
 check-manifests: manifests ## Verify manifests file is up to date
 	test `git status --porcelain $(GENERATED_FILES) | grep -cE '(^\?)|(^ M)'` -eq 0 || (echo "The manifest file changed, please 'make manifests' and commit the results"; exit 1)
+
+ifeq ($(shell go env GOOS),darwin) # Use the darwin/amd64 binary until an arm64 version is available
+KUBEBUILDER_ASSETS ?= $(shell $(SETUP_ENVTEST) use --use-env -p path --arch amd64 $(KUBEBUILDER_ENVTEST_KUBERNETES_VERSION))
+else
+KUBEBUILDER_ASSETS ?= $(shell $(SETUP_ENVTEST) use --use-env -p path $(KUBEBUILDER_ENVTEST_KUBERNETES_VERSION))
+endif
 
 ##@ TESTING
 
 .PHONY: test
 test: | check-manifests fmt vet ## Run uts.
 	KUBEBUILDER_ASSETS="$(KUBEBUILDER_ASSETS)" go test $(shell go list ./... |grep -v test/fv |grep -v test/helpers) $(TEST_ARGS) -coverprofile cover.out
-
 
 set-manifest-image:
 	sed -i'' -e 's@image: .*@image: '"docker.io/${MANIFEST_IMG}:$(MANIFEST_TAG)"'@' ./k8s/manifest.yaml >> ./k8s/manifest.yaml-e
@@ -149,7 +156,7 @@ load-image: docker-build $(KIND)
 # K8S_VERSION for the Kind cluster can be set as environment variable. If not defined,
 # this default value is used
 ifndef K8S_VERSION
-K8S_VERSION := v1.33.0
+K8S_VERSION := v1.34.0
 endif
 
 KIND_CONFIG ?= kind-cluster.yaml
