@@ -31,6 +31,8 @@ spec:
   ttlSecondsAfterFinished: 240
   template:
     spec:
+      securityContext:
+        runAsNonRoot: true
       containers:
       - name: register-mgmt-cluster
         image: docker.io/projectsveltos/register-mgmt-cluster:v1.6.0
@@ -42,10 +44,12 @@ spec:
           requests:
             memory: 128Mi
         securityContext:
+          seccompProfile:
+            type: RuntimeDefault
           allowPrivilegeEscalation: false
           capabilities:
             drop:
-            - ALL
+              - "ALL"
       serviceAccountName: register-mgmt-cluster
       restartPolicy: Never
   backoffLimit: 4
