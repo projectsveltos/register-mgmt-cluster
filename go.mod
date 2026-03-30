@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/logr v1.4.3
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
-	github.com/projectsveltos/libsveltos v1.6.2-0.20260329155458-e5b0eaf6642a
+	github.com/projectsveltos/libsveltos v1.7.0
 	github.com/spf13/pflag v1.0.10
 	k8s.io/api v0.35.3
 	k8s.io/apimachinery v0.35.3
