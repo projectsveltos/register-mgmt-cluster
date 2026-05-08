@@ -39,6 +39,7 @@ var (
 	sveltosClusterNamespace string
 	sveltosClusterName      string
 	serviceAccountToken     bool
+	skipRegister            bool
 )
 
 var (
@@ -121,9 +122,12 @@ func main() {
 	}
 
 	ctx := ctrl.SetupSignalHandler()
-	err = registerManagementCluster(ctx, restConfig, c, caData, setupLog)
-	if err != nil {
-		os.Exit(1)
+
+	if !skipRegister {
+		err = registerManagementCluster(ctx, restConfig, c, caData, setupLog)
+		if err != nil {
+			os.Exit(1)
+		}
 	}
 
 	err = deployDefaultInstances(ctx, c, setupLog)
@@ -161,6 +165,10 @@ func initFlags(fs *pflag.FlagSet) {
 
 	fs.BoolVar(&serviceAccountToken, "service-account-token", false,
 		"This option instructs Sveltos to create a Secret of type kubernetes.io/service-account-token instead of generating a token associated to ServiceAccount")
+
+	fs.BoolVar(&skipRegister, "skip-self-registration", false,
+		"When set to true, Sveltos will not automatically create a SveltosCluster resource "+
+			"representing the local management cluster.")
 }
 
 func registerManagementCluster(ctx context.Context, restConfig *rest.Config, c client.Client,
