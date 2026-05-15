@@ -35,7 +35,7 @@ spec:
         runAsNonRoot: true
       containers:
       - name: register-mgmt-cluster
-        image: docker.io/projectsveltos/register-mgmt-cluster:v1.9.0
+        image: docker.io/projectsveltos/register-mgmt-cluster:v1.10.0
         imagePullPolicy: IfNotPresent
         args:
         - --labels=
