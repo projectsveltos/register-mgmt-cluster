@@ -81,6 +81,8 @@ spec:
   - component: ConversionWebhook
     logLevel: LogLevelInfo
   - component: Techsupport
+    logLevel: LogLevelInfo
+  - component: MCPServer
     logLevel: LogLevelInfo`
 )
 
