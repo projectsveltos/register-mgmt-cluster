@@ -109,6 +109,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	sveltosNamespace := os.Getenv("NAMESPACE")
+	if sveltosNamespace == "" {
+		setupLog.V(logs.LogInfo).Error(nil, "Missing required environment variables NAMESPACE")
+		os.Exit(1)
+	}
+
 	restConfig := ctrl.GetConfigOrDie()
 
 	var c client.Client
@@ -126,7 +132,7 @@ func main() {
 	ctx := ctrl.SetupSignalHandler()
 
 	if !skipRegister {
-		err = registerManagementCluster(ctx, restConfig, c, caData, setupLog)
+		err = registerManagementCluster(ctx, restConfig, c, caData, sveltosNamespace, setupLog)
 		if err != nil {
 			os.Exit(1)
 		}
@@ -174,9 +180,9 @@ func initFlags(fs *pflag.FlagSet) {
 }
 
 func registerManagementCluster(ctx context.Context, restConfig *rest.Config, c client.Client,
-	caData []byte, logger logr.Logger) error {
+	caData []byte, sveltosNamespace string, logger logr.Logger) error {
 
-	kubeconfig, err := generateKubeconfigForServiceAccount(ctx, restConfig, c, projectsveltos,
+	kubeconfig, err := generateKubeconfigForServiceAccount(ctx, restConfig, c, sveltosNamespace,
 		projectsveltos, tokenExpirationInSeconds, caData, logger)
 	if err != nil {
 		logger.V(logs.LogInfo).Info(fmt.Sprintf("failed to get kubeconfig: %v", err))
