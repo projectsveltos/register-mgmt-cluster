@@ -37,7 +37,7 @@ spec:
           type: RuntimeDefault
       containers:
       - name: register-mgmt-cluster
-        image: docker.io/projectsveltos/register-mgmt-cluster:v1.13.0
+        image: docker.io/projectsveltos/register-mgmt-cluster:main
         imagePullPolicy: IfNotPresent
         args:
         - --labels=
