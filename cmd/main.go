@@ -30,6 +30,7 @@ import (
 
 	libsveltosv1beta1 "github.com/projectsveltos/libsveltos/api/v1beta1"
 	"github.com/projectsveltos/libsveltos/lib/k8s_utils"
+	license "github.com/projectsveltos/libsveltos/lib/licenses"
 	logs "github.com/projectsveltos/libsveltos/lib/logsettings"
 )
 
@@ -141,6 +142,13 @@ func main() {
 	err = deployDefaultInstances(ctx, c, setupLog)
 	if err != nil {
 		os.Exit(1)
+	}
+
+	// Not fatal: registration above already succeeded, and this is unrelated to it. A failure
+	// here is reported so it's visible, but must not take down cluster registration over a
+	// licensing Secret.
+	if err := license.MigrateLicenseSecretType(ctx, c, sveltosNamespace, setupLog); err != nil {
+		setupLog.V(logs.LogInfo).Error(err, "failed to migrate sveltos-license Secret type")
 	}
 }
 
