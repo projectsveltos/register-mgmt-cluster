@@ -24,7 +24,7 @@ ARCH ?= amd64
 OS ?= $(shell uname -s | tr A-Z a-z)
 K8S_LATEST_VER ?= $(shell curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)
 export CONTROLLER_IMG ?= $(REGISTRY)/$(IMAGE_NAME)
-TAG ?= v1.16.0
+TAG ?= v1.17.0
 
 .PHONY: all
 all: build
@@ -63,7 +63,7 @@ GINKGO := $(TOOLS_BIN_DIR)/ginkgo
 KIND := $(TOOLS_BIN_DIR)/kind
 KUBECTL := $(TOOLS_BIN_DIR)/kubectl
 
-GOLANGCI_LINT_VERSION := "v2.13.2"
+GOLANGCI_LINT_VERSION := "v2.15.0"
 
 SETUP_ENVTEST_VER := release-0.25
 SETUP_ENVTEST_BIN := setup-envtest
